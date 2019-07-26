@@ -9,7 +9,8 @@
 //#include "http_post.h"
 //#include "http_post2.h"
 //#include "http_post3.h"
-#include "http_post4.h"
+//#include "http_post4.h"
+#include "tplink_ctrl.h"
 
 void setup()
 {
@@ -26,16 +27,16 @@ void setup()
     // Configure the clock
     delay(1000);
     setClock();
-
-    send_https();
 };
 
 void loop()
 {
     // This will switch on the LED, applying 3.3v to the pin
     digitalWrite(LED_BUILTIN, HIGH);
+    switch_on(UMBRELLA_SWITCH);
     delay(1000);
 
     digitalWrite(LED_BUILTIN, LOW);
+    switch_off(UMBRELLA_SWITCH);
     delay(1000);
 }
