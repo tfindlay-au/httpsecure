@@ -6,11 +6,14 @@
 #include <Arduino.h>
 #include "wifi_setup.h"
 #include "clock_setup.h"
-//#include "http_post.h"
-//#include "http_post2.h"
-//#include "http_post3.h"
-//#include "http_post4.h"
-#include "tplink_ctrl.h"
+#include "socket_comms.h"
+#include "sound_sensor.h"
+#include <driver/adc.h>
+
+#define LED_BUILTIN 2
+static const adc1_channel_t channel = ADC1_CHANNEL_0;  //GPIO36 or ADC1
+static const adc_atten_t atten = ADC_ATTEN_DB_0;
+
 
 void setup()
 {
@@ -19,6 +22,8 @@ void setup()
 
     // Configure LED for blinking
     pinMode(LED_BUILTIN, OUTPUT);
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(channel, atten);
 
     // Give the terminal enough time to connect
     delay(1000);
@@ -31,12 +36,30 @@ void setup()
 
 void loop()
 {
-    // This will switch on the LED, applying 3.3v to the pin
-    digitalWrite(LED_BUILTIN, HIGH);
-    switch_on(UMBRELLA_SWITCH);
-    delay(1000);
+    // Listen for the current noise level
+    float dbValue = displayNoise();
 
-    digitalWrite(LED_BUILTIN, LOW);
-    switch_off(UMBRELLA_SWITCH);
-    delay(1000);
+    // Provide feedback on the serial line
+    Serial.print(dbValue,1);
+    Serial.println(" dBA");
+
+    // Test the level
+    if(dbValue > 120) {
+
+        Serial.println("  Triggered lights!");
+
+        for(int i = 0; i < 5; i++) {
+            // This will send the command via TCP to the TP Link smart switch
+            switch_on(UMBRELLA_SWITCH);
+
+            // Add half a second delay before switching off
+            delay(1000);
+
+            // This will send the command via TCP to the TP Link smart switch
+            switch_off(UMBRELLA_SWITCH);
+
+            // Add half a second delay before looping (switching on)
+            delay(1000);
+        }
+    }
 }
