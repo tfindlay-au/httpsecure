@@ -1,5 +1,8 @@
 //
-// Created by Timothy Findlay on 2019-07-26.
+//    FILE: Dencrypt.cpp
+//  AUTHOR: Timothy Findlay
+// VERSION: 0.1
+// PURPOSE: Provide Encrypt / Decrypt functions for TP Link Smart Switch HS-100
 //
 
 #ifndef HTTPSECURE_DENCRYPT_H
@@ -20,7 +23,7 @@
  *  This procedure expects the starting address of the encrypted data, not the start of the payload.
  *
  */
-char * decrypt(const unsigned char* inBuf, char* outBuf, size_t len)
+static char * decrypt(const unsigned char* inBuf, char* outBuf, size_t len)
 {
     unsigned char        key = 171;
     unsigned char        a;
@@ -31,21 +34,15 @@ char * decrypt(const unsigned char* inBuf, char* outBuf, size_t len)
 
     outBuf = (char *) realloc(outBuf, len);
 
-    Serial.println("Inside decrypt() with... ");
-
-    Serial.print("Result size: ");
-    Serial.println(len);
-
     for(i=0; i<(int)len; i++) {
-        Serial.print("char ");
-        Serial.print(inBuf[i]);
-        Serial.print(" XOR'd with ");
-        Serial.print(key);
-        Serial.print(" is ");
-        a = (unsigned char)(key ^ inBuf[i]);
-        Serial.println(a);
 
+        // Take each character and XOR with the key
+        a = (unsigned char)(key ^ inBuf[i]);
+
+        // Set the key to be the value of this character
         key = inBuf[i];
+
+        // Store this character in the output buffer
         outBuf[i] = (char)a;
     }
     outBuf[i] = '\0';
@@ -61,11 +58,11 @@ char * decrypt(const unsigned char* inBuf, char* outBuf, size_t len)
  * @note outgoing data can contain null and non-printable values.
  * @note The first 4 bytes of the pay load is an unsigned int value with the size of the payload
  */
-unsigned char * encrypt( const char* inBuf, unsigned char* outBuf, size_t len)
+static unsigned char * encrypt(const char* inBuf, unsigned char* outBuf, size_t len)
 {
     unsigned char        key = 171;
     unsigned char        a;
-    int         i;
+    int                  i;
 
     // Convert big endian to little endian 2a 00 00 00 -> 00 00 00 2a
     unsigned int padChar = __builtin_bswap32((unsigned int)len);
@@ -91,5 +88,6 @@ unsigned char * encrypt( const char* inBuf, unsigned char* outBuf, size_t len)
     return outBuf;
 }
 
+// END OF FILE
 
 #endif //HTTPSECURE_DENCRYPT_H

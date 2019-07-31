@@ -24,4 +24,37 @@ void setClock() {
     Serial.print(asctime(&timeinfo));
 }
 
+char* getTimestamp() {
+    char* time_string = (char *)calloc(18, sizeof(char));
+    time_t nowSecs = time(nullptr);
+    struct tm timeinfo;
+    gmtime_r(&nowSecs, &timeinfo);
+    strftime(time_string,18,"%Y%m%d %H:%M:%S", &timeinfo);
+    return time_string;
+}
+
+/**
+ * Delay time expired function
+ * @param lastMillis time we started
+ * @param wait time we started
+ * @param restart do we start again
+ * @return
+ */
+boolean CheckTime(unsigned long &lastMillis, unsigned long wait,boolean restart)
+{
+    //is the time up for this task?
+    if (millis() - lastMillis >= wait)
+    {
+        //should this start again?
+        if(restart)
+        {
+            //get ready for the next iteration
+            lastMillis = millis(); //get ready for the next iteration
+        }
+        return true;
+    }
+    return false;
+
+} // END of CheckTime()
+
 #endif //HTTPSECURE_CLOCK_SETUP_H
